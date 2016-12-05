@@ -15,27 +15,4 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import cmd_pipe
-import sys
-
-upload_path = None
-exec_command = None
-encoding = None
-ips = []
-usernames = []
-passwds = []
-
-def main(argv):
-    read_cfgs()
-    read_account()
-    pass
-
-def read_cfgs():
-    pass
-
-def read_account():
-    pass
-
-
-ret = main(sys.argv)
-exit(ret)
+from cmd_pipe.SubProc import *
