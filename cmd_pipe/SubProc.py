@@ -64,14 +64,17 @@ class SubProc:
         self.buffer = ""
         return ret
 
-    def read_until(self, string):
-        if string in self.buffer:
-            index = self.buffer.index(string)
-            ret = self.buffer[: index] = string
-            self.buffer = self.buffer[index + len(self.buffer): ]
-            return ret
+    def read_until(self, *strings):
+        for string in strings:
+            if string in self.buffer:
+                index = self.buffer.index(string)
+                ret = self.buffer[: index] = string
+                self.buffer = self.buffer[index + len(self.buffer): ]
+                return ret, strings.index(string)
 
-        str_len = len(string)
+        str_len = 0
+        for string in strings:
+            str_len = max(str_len, len(string))
         cmp_str = self.buffer[-str_len :]
 
         while True:
@@ -81,14 +84,15 @@ class SubProc:
             cmp_str += s
             self.buffer += s
 
-            if string in cmp_str:
-                index = self.buffer.index(string)
-                ret = self.buffer[: index] = string
-                self.buffer = self.buffer[index + len(self.buffer): ]
-                return ret
+            for string in strings:
+                if string in cmp_str:
+                    index = self.buffer.index(string)
+                    ret = self.buffer[: index] = string
+                    self.buffer = self.buffer[index + len(self.buffer): ]
+                    return ret, strings.index(string)
 
             cmp_str = cmp_str[-str_len :]
-
+            print("log" + cmp_str)
 
     def write(self, string):
         os.write(self.parentOut, string.encode(encoding = self.encoding,
@@ -96,6 +100,11 @@ class SubProc:
 
     def read_line(self):
         return self.read_until('\n')
+
+    def close(self):
+        os.close(self.parentIn)
+        os.close(self.parentOut)
+        os.wait()
 
     def __del__(self):
         os.close(self.parentIn)

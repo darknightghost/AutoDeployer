@@ -15,8 +15,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import cmd_pipe
 import sys
+import time
+import os
+import pexpect
+import paramiko
 
 upload_path = None
 exec_command = None
@@ -24,17 +27,129 @@ encoding = None
 ips = []
 usernames = []
 passwds = []
+prompt = ""
 
 def main(argv):
+    global ips
+    global usernames
+    global passwds
+    global encoding
+
     read_cfgs()
     read_account()
-    pass
+
+    #reload(sys)
+    #sys.setdefaultencoding(encoding) 
+
+    for i in range(0, len(ips)):
+        put_files(ips[i], usernames[i], passwds[i])
+        ssh_command(ips[i], usernames[i], passwds[i])
+
+    os.system("beep -f 1000 -l 150 -r 2 -D 200")
 
 def read_cfgs():
-    pass
+    fp = open("./cfgs", "r")
+    lines = fp.readlines()
+    
+    for l in lines:
+        l = l.strip()
+        if l[0] == '#' or l == "":
+            continue
+
+        words = l.split("=")
+        name = words[0].strip()
+        val = words[1].strip()
+
+        exec("global %s;%s = \"%s\""%(name, name, val))
+
+    fp.close()
 
 def read_account():
-    pass
+    global ips
+    global usernames
+    global passwds
+
+    fp = open("./accounts", "r")
+    lines = fp.readlines()
+
+    for l in lines:
+        l = l.strip()
+
+        if l[0] == '#' or l == "":
+            continue
+        
+        words = l.split()
+        ips.append(words[0].strip())
+        usernames.append(words[1].strip())
+        passwds.append(words[2].strip())
+
+    fp.close()
+
+def put_files(ip, username, passwd):
+    global encoding
+    global upload_path
+
+    print("Uploading files to %s@%s..."%(username, ip))
+
+    oldpath = os.path.abspath(os.curdir)
+    os.chdir("./upload/")
+
+    sftp = pexpect.spawn("sftp %s@%s"%(username, ip))
+    try:
+        i = sftp.expect(["password:", "(yes/no)?"])
+
+        if i == 0:
+            sftp.sendline(passwd)
+
+        elif i == 1:
+            sftp.sendline("yes")
+            sftp.expect(['password:'])
+            sftp.sendline(passwd) 
+
+        #print(sftp.read(), end = "")
+        
+        sftp.sendline("cd \"%s\""%(upload_path))
+        sftp.expect(["sftp>"])
+        #print(sftp.read(), end = "")
+
+        sftp.sendline("put -r ./*")
+        sftp.expect(["sftp>"])
+        #print(sftp.read(), end = "")
+
+        sftp.sendline("exit")
+        time.sleep(0.6)
+        #print(sftp.read(), end = "")
+
+    finally: 
+        sftp.close()
+        os.chdir(oldpath)
+
+
+def ssh_command(ip, username, passwd):
+    global exec_command
+    global prompt
+    global upload_path
+    global encoding
+
+    print("Runing command on %s@%s..."%(username, ip))
+    ssh = paramiko.SSHClient()
+    try:
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(ip,22,username,passwd,timeout=5)
+
+        stdin, stdout, stderr = ssh.exec_command(exec_command)
+        out = stdout.read()
+        out = out.decode(encoding = encoding, errors = 'ignore')
+
+        #屏幕输出
+        for o in out:
+            print(o, end = "")
+
+        #ssh.exec_command("reboot")
+        print('%s\tOK\n'%(ip))
+
+    finally: 
+        ssh.close()
 
 
 ret = main(sys.argv)

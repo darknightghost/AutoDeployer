@@ -5,13 +5,14 @@
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.8	//
 SubProc	cmd_pipe/SubProc.py	/^class SubProc:$/;"	kind:c	line:20	language:Python	inherits:
-__del__	cmd_pipe/SubProc.py	/^    def __del__(self):$/;"	kind:m	line:100	language:Python	class:SubProc	file:	access:private
+__del__	cmd_pipe/SubProc.py	/^    def __del__(self):$/;"	kind:m	line:109	language:Python	class:SubProc	file:	access:private
 __init__	cmd_pipe/SubProc.py	/^    def __init__(self, path, argv, encoding = 'utf-8'):$/;"	kind:m	line:21	language:Python	class:SubProc	access:public
+close	cmd_pipe/SubProc.py	/^    def close(self):$/;"	kind:m	line:104	language:Python	class:SubProc	access:public
 is_child	cmd_pipe/SubProc.py	/^    def is_child(self):$/;"	kind:m	line:45	language:Python	class:SubProc	access:public
 is_parent	cmd_pipe/SubProc.py	/^    def is_parent(self):$/;"	kind:m	line:54	language:Python	class:SubProc	access:public
 os	cmd_pipe/SubProc.py	/^import os$/;"	kind:i	line:17	language:Python
 read	cmd_pipe/SubProc.py	/^    def read(self):$/;"	kind:m	line:58	language:Python	class:SubProc	access:public
-read_line	cmd_pipe/SubProc.py	/^    def read_line(self):$/;"	kind:m	line:97	language:Python	class:SubProc	access:public
-read_until	cmd_pipe/SubProc.py	/^    def read_until(self, string):$/;"	kind:m	line:67	language:Python	class:SubProc	access:public
+read_line	cmd_pipe/SubProc.py	/^    def read_line(self):$/;"	kind:m	line:101	language:Python	class:SubProc	access:public
+read_until	cmd_pipe/SubProc.py	/^    def read_until(self, *strings):$/;"	kind:m	line:67	language:Python	class:SubProc	access:public
 sys	cmd_pipe/SubProc.py	/^import sys$/;"	kind:i	line:18	language:Python
-write	cmd_pipe/SubProc.py	/^    def write(self, string):$/;"	kind:m	line:93	language:Python	class:SubProc	access:public
+write	cmd_pipe/SubProc.py	/^    def write(self, string):$/;"	kind:m	line:97	language:Python	class:SubProc	access:public

@@ -1,3 +1,4 @@
 upload_path = Remote path to upload
 exec_command = Command to exectue
 encoding = Character encoding
+prompt = Shell Prompt
