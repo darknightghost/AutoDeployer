@@ -96,33 +96,55 @@ def put_files(ip, username, passwd):
 
     sftp = pexpect.spawn("sftp %s@%s"%(username, ip))
     try:
-        i = sftp.expect(["password:", "(yes/no)?"])
+        i = sftp.expect(["password:", "(yes/no)"])
 
         if i == 0:
             sftp.sendline(passwd)
 
         elif i == 1:
+            time.sleep(0.6)
             sftp.sendline("yes")
             sftp.expect(['password:'])
             sftp.sendline(passwd) 
 
-        #print(sftp.read(), end = "")
-        
+        sftp.expect(["sftp> "])
+        time.sleep(0.6)
         sftp.sendline("cd \"%s\""%(upload_path))
-        sftp.expect(["sftp>"])
-        #print(sftp.read(), end = "")
+        sftp.expect(["sftp> "])
+        time.sleep(0.6)
 
-        sftp.sendline("put -r ./*")
-        sftp.expect(["sftp>"])
-        #print(sftp.read(), end = "")
+        file_list = os.listdir(".")
+        for f in file_list:
+            if f not in (".", ".."):
+                do_put(sftp, f)
 
         sftp.sendline("exit")
         time.sleep(0.6)
-        #print(sftp.read(), end = "")
 
     finally: 
         sftp.close()
         os.chdir(oldpath)
+
+def do_put(sftp, name):
+    global upload_path
+
+    remote_path = "%s/%s"%(upload_path, name)
+    if os.path.isdir(name):
+        print("Making directory \"%s\"..."%(remote_path))
+        sftp.sendline("mkdir %s"%(remote_path)) 
+        sftp.expect(["sftp> "])
+        time.sleep(0.4)
+
+        file_list = os.listdir(name)
+        for f in file_list:
+            if f not in (".", ".."):
+                do_put(sftp, "%s/%s"%(name, f))
+
+    else:
+        print("Putting file \"%s\"..."%(remote_path))
+        sftp.sendline("put \"%s\" \"%s\""%("./" +  name, remote_path)) 
+        sftp.expect(["sftp> "])
+        time.sleep(0.4)
 
 
 def ssh_command(ip, username, passwd):
@@ -130,6 +152,7 @@ def ssh_command(ip, username, passwd):
     global prompt
     global upload_path
     global encoding
+
 
     print("Runing command on %s@%s..."%(username, ip))
     ssh = paramiko.SSHClient()
@@ -141,11 +164,10 @@ def ssh_command(ip, username, passwd):
         out = stdout.read()
         out = out.decode(encoding = encoding, errors = 'ignore')
 
-        #屏幕输出
         for o in out:
             print(o, end = "")
 
-        #ssh.exec_command("reboot")
+        ssh.exec_command("reboot")
         print('%s\tOK\n'%(ip))
 
     finally: 
